@@ -7,13 +7,11 @@ const isUserLoggedin = async (req, res, next) => {
   try {
     const token = req.cookies.accessToken;
 
-
     if (!token) {
       throw new ApiError(401, "Please authenticate", "Unauthorized Access");
     }
 
     const decoded = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
     if (!decoded) {
       throw new ApiError(401, "Invalid Token", "Unauthorized Access");
     }

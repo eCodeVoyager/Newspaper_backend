@@ -2,6 +2,7 @@ const userModel = require("../models/userModel");
 const ApiError = require("../utils/apiError");
 const ApiResponse = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
+const jwt = require("jsonwebtoken");
 
 // generate Access token and refresh token combine Method
 const generateTokens = (user) => {
@@ -43,14 +44,29 @@ exports.registerUser = asyncHandler(async (req, res) => {
   if (!email) {
     throw new ApiError(400, "Email is required", "Bad Request");
   }
+  const emailExist = await userModel.findOne({ email });
+  if (emailExist) {
+    throw new ApiError(409, "Email already exists", "Bad Request");
+  }
   if (!password) {
     throw new ApiError(400, "Password is required", "Bad Request");
+  }
+  if (password.length < 8) {
+    throw new ApiError(
+      411,
+      "Password must be at least 8 characters",
+      "Bad Request"
+    );
   }
 
   // create user in database
   const user = await userModel.create({ email, password });
   if (!user) {
-    throw new ApiError(400, "Missing required fields", "Bad Request");
+    throw new ApiError(
+      400,
+      "Failed to create user in Database",
+      "Database Error"
+    );
   }
   // generate access token and refresh token
   const { accessToken, refreshToken } = generateTokens(user);
@@ -69,25 +85,42 @@ exports.registerUser = asyncHandler(async (req, res) => {
 // Login user
 exports.loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+
   if (!email) {
     throw new ApiError(400, "Email is required", "Bad Request");
   }
+
   if (!password) {
     throw new ApiError(400, "Password is required", "Bad Request");
   }
-  // find user in database
+
   const user = await userModel.findOne({ email });
+
   if (!user) {
     throw new ApiError(404, "User not found", "Not Found");
   }
-  // compare password
+
+  // Compare password
   const isMatch = await user.checkPassword(password);
+
   if (!isMatch) {
     throw new ApiError(401, "Invalid credentials", "Unauthorized");
   }
-  // generate access token and refresh token
+
+  // Generate access token and refresh token
   const { accessToken, refreshToken } = generateTokens(user);
-  const sanitizedUserData = { ...user.toObject() }; // convert to object to remove the password field
+
+  const updateToken = await userModel.findByIdAndUpdate(
+    user._id,
+    { $set: { refreshToken: refreshToken } },
+    { new: true, useFindAndModify: false }
+  );
+  if (!updateToken) {
+    throw new ApiError(500, "Failed to update token", "Internal Server Error");
+  }
+
+  // Remove the password field from the user data
+  const sanitizedUserData = { ...user.toObject() };
   delete sanitizedUserData.password;
 
   res
@@ -146,21 +179,71 @@ exports.deleteUser = asyncHandler(async (req, res) => {
 //upaate user
 exports.updateUser = asyncHandler(async (req, res) => {
   const id = req.user._id;
-  const { name, bio, fevCategory, DOB } = req.body; //DOB format should be "YYYY-MM-DD" from client
+  const { name, bio, DOB } = req.body; //DOB format should be "YYYY-MM-DD" from client
+  if (!name && !bio && !DOB) {
+    throw new ApiError(400, "Minimum one paramiter required", "Bad Request");
+  }
   if (!id) {
     throw new ApiError(401, "User Not Found", "Unauthorized Access");
   }
 
   const dbprocess = await userModel.findByIdAndUpdate(
     id,
-    { $set: { name, bio, fevCategory, DOB } },
+    { $set: { name, bio, DOB } },
     { new: true, useFindAndModify: false }
   );
   if (!dbprocess) {
-    throw new ApiError(401, "User Not Found", "Unauthorized Access");
+    throw new ApiError(500, "Database Error", "Database Error");
   }
   return res.status(200).json({
     success: true,
     message: "User Updated Successfully",
   });
+});
+
+//renew token
+exports.renewToken = asyncHandler(async (req, res) => {
+  const refreshTokenCookie = req.cookies.refreshToken;
+  if (!refreshTokenCookie) {
+    throw new ApiError(403, "Token is missing", "Forbiden Access");
+  }
+
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(
+      refreshTokenCookie,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+  } catch (err) {
+    throw new ApiError(401, "Failed to decode token", "Unauthorized Access");
+  }
+  const user = await userModel.findOne({ _id: decodedToken.id });
+  if (!user) {
+    throw new ApiError(401, "User Not Found", "Unauthorized Access");
+  }
+  if (refreshTokenCookie !== user.refreshToken) {
+    throw new ApiError(401, "Invalid Token", "Unauthorized Access");
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user);
+
+  // Using await to make sure the save operation is completed before proceeding
+  const updateToken = await userModel.findByIdAndUpdate(
+    user._id,
+    { $set: { refreshToken: refreshToken } },
+    { new: true, useFindAndModify: false }
+  );
+
+  if (!updateToken) {
+    throw new ApiError(500, "Failed to update token", "Internal Server Error");
+  }
+
+  return res
+    .cookie("refreshToken", refreshToken, cookieConfig)
+    .cookie("accessToken", accessToken, cookieConfig)
+    .status(200)
+    .json({
+      success: true,
+      message: "Token Renewed Successfully",
+    });
 });

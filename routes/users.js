@@ -6,6 +6,7 @@ const {
   logoutUser,
   deleteUser,
   updateUser,
+  renewToken,
 } = require("../controllers/userController");
 const isUserLoggedin = require("../middlewares/isUserLoggedin");
 
@@ -15,9 +16,8 @@ router.get("/loggedin-user", isUserLoggedin, (req, res) => {
   res.json(req.user);
 });
 router.get("/logout", isUserLoggedin, logoutUser);
-
 router.delete("/delete-user", isUserLoggedin, deleteUser);
 router.put("/update-user", isUserLoggedin, updateUser);
-
+router.get("/token-renew", renewToken);
 
 module.exports = router;

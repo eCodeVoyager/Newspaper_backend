@@ -1,4 +1,3 @@
-const article = require("../models/articleModel");
 const userModel = require("../models/userModel");
 const categoryModel = require("../models/categoryModel");
 const ApiError = require("../utils/apiError");

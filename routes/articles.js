@@ -10,7 +10,7 @@ const {
 } = require("../controllers/articleController.js.js");
 const isUserLoggedin = require("../middlewares/isUserLoggedin.js");
 
-router.post("/create-articlA", isUserLoggedin, createArticle);
+router.post("/create-article", isUserLoggedin, createArticle);
 router.get("/", getAllarticles);
 router.get("/:id", getArticle);
 router.put("/:id", isUserLoggedin, updateArticle);

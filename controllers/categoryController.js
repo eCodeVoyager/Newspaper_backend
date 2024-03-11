@@ -44,27 +44,49 @@ exports.getCategory = asyncHandler(async (req, res) => {
 
 // Update a category
 exports.updateCategory = asyncHandler(async (req, res) => {
-  const category = await categoryModel.findByIdAndUpdate(
-    req.params.id,
+  const { name, description } = req.body;
+  if (!name && !description) {
+    throw new ApiError(400, "Name or description is required", "Bad Request");
+  }
+
+  const categoryID = req.params.id;
+  if (!categoryID) {
+    throw new ApiError(404, "Category ID must be there", "Bad Request");
+  }
+  if (categoryID.length !== 24) {
+    throw new ApiError(400, "Category ID must be 24 characters", "Bad Request");
+  }
+  const categoryDB = await categoryModel.findByIdAndUpdate(
+    categoryID,
     req.body,
     {
       new: true,
       runValidators: true,
     }
   );
-  if (!category) {
-    throw new ApiError(400, "Database error", "Bad Request");
+  if (!categoryDB) {
+    throw new ApiError(404, "Category Not Found OR Database Error", "Bad Request");
   }
   res
     .status(200)
-    .json(new ApiResponse(200, "Category updated successfully", category));
+    .json(new ApiResponse(200, "Category updated successfully", categoryDB));
 });
 
 // Delete a category
 exports.deleteCategory = asyncHandler(async (req, res) => {
-  const category = await categoryModel.findByIdAndDelete(req.params.id);
+  const category = req.params.id;
+  if (category === null) {
+    throw new ApiError(404, "Category ID must be there", "Bad Request");
+  }
+  if (category.length !== 24) {
+    throw new ApiError(400, "Category ID must be 24 characters", "Bad Request");
+  }
   if (!category) {
     throw new ApiError(404, "Category not found", "Not Found");
+  }
+  const categoryDB = await categoryModel.findByIdAndDelete(req.params.id);
+  if (!categoryDB) {
+    throw new ApiError(404, "Category not found OR DB error", "Bad Request");
   }
   res
     .status(200)

@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema(
     name: String,
     DOB: String,
     bio: String,
-    fevCategory: [String],
   },
   {
     timestamps: true,
@@ -52,14 +51,19 @@ userSchema.methods.generateAccessToken = function () {
   const user = this;
   return jwt.sign(
     { id: user.id, email: user.email },
-    process.env.ACCESS_TOKEN_SECRET
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_LIFE,
+    }
   );
 };
 
 // genarate Refresh token
 userSchema.methods.generateRefreshToken = function () {
   const user = this;
-  return jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET);
+  return jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_LIFE,
+  });
 };
 
 module.exports = mongoose.model("User", userSchema);
