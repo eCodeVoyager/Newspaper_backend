@@ -21,7 +21,7 @@ app.use(cookieParser());
 
 app.use("/", indexRouter);
 app.use("/api/v1/user", usersRouter);
-app.use("/api/v1/artical", articalsRouter);
+app.use("/api/v1/article", articalsRouter);
 app.use("/api/v1/category", categoryRouter);
 
 module.exports = app;

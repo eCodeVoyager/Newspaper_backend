@@ -75,8 +75,20 @@ exports.getAllarticles = asyncHandler(async (_, res) => {
 });
 // Get a single article
 exports.getArticle = asyncHandler(async (req, res) => {
+  const articleID = req.params.id;
+  if (!articleID) {
+    throw new ApiError(400, "article ID is required", "Bad Request");
+  }
+  if (articleID.length !== 24) {
+    throw new ApiError(
+      400,
+      "Article Id must be 24 characters in legnth",
+      "Bad Request"
+    );
+  }
+
   const article = await articleModel
-    .findById(req.params.id)
+    .findById(articleID)
     .populate({ path: "author", select: "name" })
     .populate({ path: "category", select: "name" });
   if (!article) {
@@ -87,9 +99,43 @@ exports.getArticle = asyncHandler(async (req, res) => {
 
 // Update a article
 exports.updateArticle = asyncHandler(async (req, res) => {
+  const { title, content, category } = req.body;
+  if (!title && !content && !category) {
+    throw new ApiError(
+      400,
+      "Minimum of one field is required to update article",
+      "Bad Request"
+    );
+  }
+
+  const articleID = req.params.id;
+  if (!articleID) {
+    throw new ApiError(400, "article ID is required", "Bad Request");
+  }
+  if (articleID.length !== 24) {
+    throw new ApiError(
+      400,
+      "Article Id must be 24 characters in legnth",
+      "Bad Request"
+    );
+  }
+  const categoryExists = await categoryModel.findOne({ name: category });
+  if (!categoryExists) {
+    throw new ApiError(
+      404,
+      "Category does not exist || Please create one",
+      "Bad Request"
+    );
+  }
+
   const article = await articleModel.findByIdAndUpdate(
-    req.params.id,
-    req.body.id,
+    articleID,
+    {
+      title,
+      content,
+      category: categoryExists._id,
+    },
+
     {
       new: true,
       runValidators: true,
@@ -105,7 +151,18 @@ exports.updateArticle = asyncHandler(async (req, res) => {
 
 // Delete a article
 exports.deleteArticle = asyncHandler(async (req, res) => {
-  const article = await articleModel.findByIdAndDelete(req.params.id);
+  const articleID = req.params.id;
+  if (!articleID) {
+    throw new ApiError(400, "article ID is required", "Bad Request");
+  }
+  if (articleID.length !== 24) {
+    throw new ApiError(
+      400,
+      "Article Id must be 24 characters in legnth",
+      "Bad Request"
+    );
+  }
+  const article = await articleModel.findByIdAndDelete(articleID);
   if (!article) {
     throw new ApiError(404, "article not found", "Not Found");
   }
