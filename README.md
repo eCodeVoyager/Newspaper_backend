@@ -6,15 +6,14 @@ Welcome to the Newspaper Website Backend API! This API, developed using Node.js,
 
 Explore and interact with the API using the following Postman Collection Documentation links:
 
-1. [Users Collection Documentation](https://www.postman.com/collections/YOUR_USERS_COLLECTION_ID)
-2. [Categories Collection Documentation](https://www.postman.com/collections/YOUR_CATEGORIES_COLLECTION_ID)
-3. [Articles Collection Documentation](https://www.postman.com/collections/YOUR_ARTICLES_COLLECTION_ID)
+1. [Users Collection Documentation]([https://www.postman.com/collections/YOUR_USERS_COLLECTION_ID](https://documenter.getpostman.com/view/32008492/2sA2xiWXk9))
+2. [Categories Collection Documentation]([https://www.postman.com/collections/YOUR_CATEGORIES_COLLECTION_ID](https://documenter.getpostman.com/view/32008492/2sA2xiWXk6))
+3. [Articles Collection Documentation]([https://www.postman.com/collections/YOUR_ARTICLES_COLLECTION_ID](https://documenter.getpostman.com/view/32008492/2sA2xjyAsa))
 
 ## Server Link
 
 [Newspaper Backend Server](https://newspaper.azurewebsites.net)
 
-Certainly! Here's the updated version:
 
 ## Project Installation
 
