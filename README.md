@@ -22,13 +22,13 @@ To run the project locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/newspaper-backend.git
+   git clone https://github.com/eCodeVoyager/Newspaper_backend.git
    ```
 
 2. **Navigate to the project directory:**
 
    ```bash
-   cd newspaper-backend
+   cd Newspaper_backend
    ```
 
 3. **Install dependencies:**
