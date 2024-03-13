@@ -22,7 +22,7 @@ To run the project locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/eCodeVoyager/newspaper-backend.git
+   git clone https://github.com/eCodeVoyager/Newspaper_backend.git
    ```
 
 2. **Navigate to the project directory:**
