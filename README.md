@@ -28,7 +28,7 @@ To run the project locally, follow these steps:
 2. **Navigate to the project directory:**
 
    ```bash
-   cd newspaper-backend
+   cd Newspaper_backend
    ```
 
 3. **Install dependencies:**
