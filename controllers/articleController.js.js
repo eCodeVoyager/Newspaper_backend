@@ -63,15 +63,39 @@ exports.createArticle = asyncHandler(async (req, res) => {
 });
 
 // Get all articles
-exports.getAllarticles = asyncHandler(async (_, res) => {
+exports.getAllarticles = asyncHandler(async (req, res) => {
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 10;
+
+  const options = {
+    page: page,
+    limit: pageSize,
+  };
+
+  const articlesPage = await articleModel.paginate({}, options);
+
   const articles = await articleModel
     .find({})
     .populate({ path: "author", select: "name" })
     .populate({ path: "category", select: "name" });
-  if (!articles) {
+
+  if (!articlesPage.docs || articlesPage.docs.length === 0) {
     throw new ApiError(404, "No articles found", "Not Found");
   }
-  res.status(200).json(new ApiResponse(200, articles, "articles found"));
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        articles: articlesPage.docs,
+        totalPages: articlesPage.totalPages,
+        currentPage: articlesPage.page,
+        pageSize: articlesPage.limit,
+        totalArticles: articlesPage.totalDocs,
+      },
+      "Articles found"
+    )
+  );
 });
 // Get a single article
 exports.getArticle = asyncHandler(async (req, res) => {

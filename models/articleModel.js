@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const articleSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -10,5 +11,7 @@ const articleSchema = new mongoose.Schema({
   },
   publicationDate: { type: Date, default: Date.now },
 });
+
+articleSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model("Article", articleSchema);
